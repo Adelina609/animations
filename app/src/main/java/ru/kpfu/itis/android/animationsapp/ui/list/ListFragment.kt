@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,17 +59,17 @@ class ListFragment : MvpAppCompatFragment(), ListView {
     private fun initAdapter() {
         rv_main.layoutManager = LinearLayoutManager(context)
         rv_main.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if (dy < 0) {
-                    tv_title_list.animate().setDuration(DURATION).alpha(0f).withEndAction {
-                        tv_title_list.isVisible = false
-                    }
-                }
                 if (dy > 0) {
-                    tv_title_list.animate().setDuration(DURATION).alpha(1f).withStartAction {
-                        tv_title_list.isVisible = true
-                    }
+                    tv_title_list.startAnimation(AnimationUtils
+                        .loadAnimation(context, R.anim.fade_in))
+
+                }
+                if (dy < 0) {
+                    tv_title_list.startAnimation(AnimationUtils
+                        .loadAnimation(context, R.anim.fade_out))
                 }
             }
         })
@@ -103,8 +104,4 @@ class ListFragment : MvpAppCompatFragment(), ListView {
 
     private fun getViewByPosition(pos: Int, @IdRes viewId: Int): View? =
         rv_main.findViewHolderForAdapterPosition(pos)?.itemView?.findViewById(viewId)
-
-    companion object {
-        private const val DURATION = 500L
-    }
 }
