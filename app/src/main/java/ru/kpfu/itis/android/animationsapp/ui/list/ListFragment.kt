@@ -70,7 +70,6 @@ class ListFragment : MvpAppCompatFragment(), ListView {
                 super.onScrolled(recyclerView, dx, dy)
                 if (dy > 0 && isAnimatingAvailable) {
                     animate(0f, 1f)
-                    isAnimatingAvailable = false
                 } else if (dy < 0 && isAnimatingAvailable) {
                     animate(1f, 0f)
                 }
