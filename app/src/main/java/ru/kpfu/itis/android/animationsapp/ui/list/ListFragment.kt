@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.annotation.IdRes
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.arellomobile.mvp.MvpAppCompatFragment
@@ -34,6 +32,7 @@ class ListFragment : MvpAppCompatFragment(), ListView {
     fun getPresenter(): ListPresenter = listPresenter
 
     private var adapter: Adapter? = null
+    private var isAnimatingAvailable = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DaggerListComponent.builder()
@@ -60,16 +59,20 @@ class ListFragment : MvpAppCompatFragment(), ListView {
         rv_main.layoutManager = LinearLayoutManager(context)
         rv_main.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    isAnimatingAvailable = true
+                }
+            }
+
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0) {
-                    tv_title_list.startAnimation(AnimationUtils
-                        .loadAnimation(context, R.anim.fade_in))
-
-                }
-                if (dy < 0) {
-                    tv_title_list.startAnimation(AnimationUtils
-                        .loadAnimation(context, R.anim.fade_out))
+                if (dy > 0 && isAnimatingAvailable) {
+                    animate(0f, 1f)
+                    isAnimatingAvailable = false
+                } else if (dy < 0 && isAnimatingAvailable) {
+                    animate(1f, 0f)
                 }
             }
         })
@@ -77,6 +80,15 @@ class ListFragment : MvpAppCompatFragment(), ListView {
             listPresenter.itemClick(item, info)
         }
         rv_main.adapter = adapter
+    }
+
+    private fun animate(alphaFrom: Float, alphaTo: Float) {
+        tv_title_list.apply {
+            alpha = alphaFrom
+            animate().alpha(alphaTo).setListener(null).duration =
+                resources.getInteger(R.integer.fade_anim_duration).toLong()
+        }
+        isAnimatingAvailable = false
     }
 
     override fun displayList(list: List<Item>) {
